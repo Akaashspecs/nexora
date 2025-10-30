@@ -1,4 +1,4 @@
-import Product from "../models.js/productModel.js";
+import Product from "../models/productModel.js";
 
 export const getPorducts = async (req, res) => {
   const products = await Product.find();
@@ -19,7 +19,6 @@ export const addProducts = async (req, res) => {
 
 export const deletePorducts = async (req, res) => {
   try {
-    console.log(req);
     const { productId } = req.params;
     // find and delete the product by its productId
     const deletedProduct = await Product.findOneAndDelete({ productId });

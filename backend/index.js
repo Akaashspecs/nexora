@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./config/database.js";
+import checkoutRoutes from "./routes/checkoutRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 // ✅ Correct routes
 
 app.use("/api/cart", productRoutes);
+app.use("/api/checkout", checkoutRoutes);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

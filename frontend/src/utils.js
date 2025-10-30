@@ -32,7 +32,6 @@ export const createCart = async (
       { headers: { "Content-Type": "application/json" } }
     )
     .then((response) => {
-      console.log("Response:", response.data);
       setSelectedProducts([...selectedProducts, response.data]);
     })
     .catch((error) => {
@@ -51,7 +50,7 @@ export const removeItemFromCart = async (
       const remainingItems = selectedProducts.filter(
         (item) => item.productId !== itemId
       );
-      console.log(remainingItems);
+
       setSelectedProducts(remainingItems);
     })
     .catch((error) => {

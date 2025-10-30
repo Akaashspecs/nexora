@@ -15,16 +15,21 @@ function MySimpleTable({ data, columns }) {
     <table>
       <thead>
         {table.getHeaderGroups().map((headerGroup) => (
-          <tr className="bg-red-600" key={headerGroup.id}>
+          <tr className="bg-red-600" key={headerGroup?.id}>
             {headerGroup.headers.map((header) => (
               <th
-                className="bg-red-300 text-start min-w-[100px] px-5"
                 key={header.id}
+                className="bg-red-300 text-start px-1  md:px-3 py-2 text-sm  md:text-base font-semibold 
+                             whitespace-nowrap truncate overflow-hidden"
+                title={flexRender(
+                  header.column?.columnDef?.header,
+                  header.getContext()
+                )}
               >
                 {header.isPlaceholder
                   ? null
                   : flexRender(
-                      header.column.columnDef.header,
+                      header?.column.columnDef?.header,
                       header.getContext()
                     )}
               </th>
@@ -36,8 +41,16 @@ function MySimpleTable({ data, columns }) {
         {table.getRowModel().rows.map((row) => (
           <tr key={row.id}>
             {row.getVisibleCells().map((cell) => (
-              <td key={cell.id} className="px-5 h-[30px] ">
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              <td
+                key={cell.id}
+                className="md:px-3 px-1 py-2 text-xs md:text-base truncate whitespace-nowrap 
+                             overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[250px]  md:max-w-[350px]"
+                title={flexRender(
+                  cell?.column?.columnDef?.cell,
+                  cell.getContext()
+                )}
+              >
+                {flexRender(cell?.column?.columnDef?.cell, cell.getContext())}
               </td>
             ))}
           </tr>

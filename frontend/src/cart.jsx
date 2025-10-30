@@ -1,18 +1,24 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { IoMdArrowBack } from "react-icons/io";
+import { MdOutlineDeleteOutline } from "react-icons/md";
+import { Link } from "react-router";
 import { useCart } from "./cartContext";
 import MySimpleTable from "./cartTable";
-import { IoMdArrowBack } from "react-icons/io";
-import { Link } from "react-router";
-import { MdOutlineDeleteOutline } from "react-icons/md";
+import Checkout from "./checkout";
+import Loader from "./Loader";
 import { removeItemFromCart } from "./utils";
 
 const Cart = () => {
   const { selectedProducts, products, setSelectedProducts } = useCart();
   const [data, setData] = useState(null);
+  const [totalValue, setTotalValue] = useState(0);
+  const [isCheckoutTabClose, setIsCheckoutTabClose] = useState(true);
 
   useEffect(() => {
-    if (selectedProducts.length > 0 && products.length > 0) {
+    if (selectedProducts.length === 0) {
+      setData(null);
+    } else if (selectedProducts.length > 0 && products.length > 0) {
       const tableData = selectedProducts.map((product) => {
         const productDetail = products.find(
           (item) => item.id === product.productId
@@ -27,14 +33,7 @@ const Cart = () => {
       });
       setData(tableData);
     }
-
-    if (selectedProducts.length > 0) {
-      const totalValue = selectedProducts.reduce((acc, x) => acc + x, 0);
-      console.log(selectedProducts);
-    }
   }, [selectedProducts, products]);
-
-  console.log(data);
 
   const handleUpdateCart = async (sign, productId, qty) => {
     let quantity = qty;
@@ -55,7 +54,6 @@ const Cart = () => {
           { headers: { "Content-Type": "application/json" } }
         )
         .then((response) => {
-          console.log("Response:", response.data);
           const updatedSelectedProducts = selectedProducts.some(
             (item) => item.productId === response.data.product.productId
           )
@@ -75,6 +73,19 @@ const Cart = () => {
     updateCart();
   };
 
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const totalPrice = data
+        .reduce((acc, item) => {
+          return (acc += item.quantity * item.price);
+        }, 0)
+        .toFixed(2);
+      setTotalValue(totalPrice);
+    } else {
+      setTotalValue(0);
+    }
+  }, [data]);
+
   const handleRemoveFromCart = (itemId) => {
     removeItemFromCart(selectedProducts, setSelectedProducts, itemId);
   };
@@ -89,23 +100,32 @@ const Cart = () => {
       header: "Quantity",
       cell: ({ row }) => {
         return (
-          <div className="flex bg-gray-100 w-[100px] px-1 justify-between items-center rounded-3xl">
-            <div
+          <div className="flex bg-gray-100 w-[80px] justify-between items-center rounded-3xl">
+            <button
+              disabled={row?.original?.quantity === 1}
               onClick={() =>
-                handleUpdateCart("-", row.original.id, row.original.quantity)
+                handleUpdateCart("-", row?.original.id, row?.original?.quantity)
               }
-              className="leading-0 bg-gray-300 rounded-full flex justify-center items-center shadow-2xl h-[25px] w-[25px] text-2xl "
+              className={`leading-0  rounded-full flex justify-center items-center shadow-2xl h-[25px] w-[25px] text-2xl ${
+                row?.original?.quantity === 1
+                  ? "bg-gray-600 "
+                  : "bg-gray-300 cursor-pointer"
+              } `}
             >
               -
-            </div>
+            </button>
 
-            <div key={row.original.id}>{row.original.quantity}</div>
+            <div key={row?.original?.id}>{row?.original?.quantity}</div>
 
             <div
               onClick={() =>
-                handleUpdateCart("+", row.original.id, row.original.quantity)
+                handleUpdateCart(
+                  "+",
+                  row?.original?.id,
+                  row?.original?.quantity
+                )
               }
-              className="bg-gray-300 rounded-full flex justify-center items-center shadow-2xl h-[25px] w-[25px] text-2xl "
+              className="bg-gray-300 rounded-full flex justify-center items-center shadow-2xl h-[25px] w-[25px] text-2xl cursor-pointer"
             >
               +
             </div>
@@ -122,12 +142,11 @@ const Cart = () => {
       id: "action",
       header: "Action",
       cell: ({ row }) => {
-        console.log(row.original);
         return (
           <div className=" flex justify-center">
             <MdOutlineDeleteOutline
-              className="cursor-pointer"
-              onClick={() => handleRemoveFromCart(row.original.id)}
+              className="cursor-pointer text-lg"
+              onClick={() => handleRemoveFromCart(row?.original?.id)}
             />
           </div>
         );
@@ -135,8 +154,16 @@ const Cart = () => {
     },
   ];
 
+  if (products.length === 0) {
+    return <Loader />;
+  }
+
   return (
     <div className="w-full relative ">
+      {isCheckoutTabClose === false && (
+        <Checkout data={data} setIsCheckoutTabClose={setIsCheckoutTabClose} />
+      )}
+
       <Link
         to={"/"}
         className="bg-white cursor-pointer h-[35px] w-[35px] rounded-full border flex items-center justify-center text-xl absolute top-0 left-5"
@@ -147,15 +174,29 @@ const Cart = () => {
         <div className="shadow-2xl max-w-[700px]  mx-auto p-5 rounded-2xl">
           <div className="mx-auto w-fit text-4xl font-serif">Cart Summary</div>
           <div className="flex justify-center items-center mt-5">
-            {data && <MySimpleTable data={data} columns={columns} />}
+            {data ? (
+              <MySimpleTable data={data} columns={columns} />
+            ) : (
+              <div>Currently No Item in Cart</div>
+            )}
           </div>
         </div>
         <div className="mt-5">
           <div className="shadow-2xl max-w-[700px] h-[100px] justify-around  mx-auto  rounded-2xl bg-white flex items-center">
-            <div className="text-xl underline">Total : $400</div>
-            <div className="bg-gradient-to-r from-red-500  to-orange-500 shadow-md text-white w-fit px-3 py-2 rounded-md cursor-pointer ">
-              Checkout
+            <div className="text-base md:text-xl underline">
+              Total : ${totalValue}
             </div>
+            <button
+              disabled={data === null}
+              onClick={() => setIsCheckoutTabClose(false)}
+              className={` shadow-md text-white w-fit px-3 py-2 rounded-md ${
+                data !== null
+                  ? "bg-gradient-to-r from-red-500  to-orange-500 cursor-pointer "
+                  : "bg-gray-500"
+              } `}
+            >
+              Checkout
+            </button>
           </div>
         </div>
       </div>
