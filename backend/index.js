@@ -5,18 +5,29 @@ import connectDB from "./config/database.js";
 import productRoutes from "./routes/productRoutes.js";
 
 dotenv.config();
-connectDB();
 
 const app = express();
-app.use(cors());
+
+// ✅ Allow all origins (for local dev)
+app.use(
+  cors({
+    origin: "*", // allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
+
+connectDB();
 
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// routes
-app.use("/api/users", productRoutes);
+// ✅ Correct routes
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.use("/api/cart", productRoutes);
+
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
