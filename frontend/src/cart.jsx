@@ -2,12 +2,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useCart } from "./cartContext";
 import MySimpleTable from "./cartTable";
+import { IoMdArrowBack } from "react-icons/io";
+import { Link } from "react-router";
+import { MdOutlineDeleteOutline } from "react-icons/md";
+import { removeItemFromCart } from "./utils";
 
 const Cart = () => {
   const { selectedProducts, products, setSelectedProducts } = useCart();
   const [data, setData] = useState(null);
-
-  console.log(selectedProducts);
 
   useEffect(() => {
     if (selectedProducts.length > 0 && products.length > 0) {
@@ -25,15 +27,20 @@ const Cart = () => {
       });
       setData(tableData);
     }
+
+    if (selectedProducts.length > 0) {
+      const totalValue = selectedProducts.reduce((acc, x) => acc + x, 0);
+      console.log(selectedProducts);
+    }
   }, [selectedProducts, products]);
+
+  console.log(data);
 
   const handleUpdateCart = async (sign, productId, qty) => {
     let quantity = qty;
 
     if (sign === "+") {
       quantity = qty + 1;
-
-      console.log("oo", quantity);
     }
 
     if (sign === "-") {
@@ -68,6 +75,10 @@ const Cart = () => {
     updateCart();
   };
 
+  const handleRemoveFromCart = (itemId) => {
+    removeItemFromCart(selectedProducts, setSelectedProducts, itemId);
+  };
+
   const columns = [
     {
       accessorKey: "title",
@@ -83,7 +94,7 @@ const Cart = () => {
               onClick={() =>
                 handleUpdateCart("-", row.original.id, row.original.quantity)
               }
-              className="bg-gray-300 rounded-full flex justify-center items-center shadow-2xl h-[25px] w-[25px] text-2xl "
+              className="leading-0 bg-gray-300 rounded-full flex justify-center items-center shadow-2xl h-[25px] w-[25px] text-2xl "
             >
               -
             </div>
@@ -102,19 +113,49 @@ const Cart = () => {
         );
       },
     },
+
     {
       accessorKey: "price",
       header: "Price",
     },
+    {
+      id: "action",
+      header: "Action",
+      cell: ({ row }) => {
+        console.log(row.original);
+        return (
+          <div className=" flex justify-center">
+            <MdOutlineDeleteOutline
+              className="cursor-pointer"
+              onClick={() => handleRemoveFromCart(row.original.id)}
+            />
+          </div>
+        );
+      },
+    },
   ];
 
   return (
-    <div className="w-full ">
+    <div className="w-full relative ">
+      <Link
+        to={"/"}
+        className="bg-white cursor-pointer h-[35px] w-[35px] rounded-full border flex items-center justify-center text-xl absolute top-0 left-5"
+      >
+        <IoMdArrowBack />
+      </Link>
       <div className=" mt-10 mx-auto">
         <div className="shadow-2xl max-w-[700px]  mx-auto p-5 rounded-2xl">
-          <div className="mx-auto w-fit text-4xl font-serif">Total</div>
+          <div className="mx-auto w-fit text-4xl font-serif">Cart Summary</div>
           <div className="flex justify-center items-center mt-5">
             {data && <MySimpleTable data={data} columns={columns} />}
+          </div>
+        </div>
+        <div className="mt-5">
+          <div className="shadow-2xl max-w-[700px] h-[100px] justify-around  mx-auto  rounded-2xl bg-white flex items-center">
+            <div className="text-xl underline">Total : $400</div>
+            <div className="bg-gradient-to-r from-red-500  to-orange-500 shadow-md text-white w-fit px-3 py-2 rounded-md cursor-pointer ">
+              Checkout
+            </div>
           </div>
         </div>
       </div>

@@ -12,7 +12,6 @@ const ProductList = () => {
   const { selectedProducts, setSelectedProducts, setProducts, products } =
     useCart();
 
-  console.log(selectedProducts, products);
   useEffect(() => {
     fetchProducts(setProducts);
     fetchSelectedProducts(setSelectedProducts);
